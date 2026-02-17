@@ -1,0 +1,15 @@
+[submodule "vendor/lastlayer"]
+	path = vendor/lastlayer
+	url = https://github.com/arekusandr/last_layer
+[submodule "vendor/llm-guard"]
+	path = vendor/llm-guard
+	url = https://github.com/protectai/llm-guard
+[submodule "vendor/piguard"]
+	path = vendor/piguard
+	url = https://github.com/leolee99/PIGuard
+[submodule "vendor/puppetry-detector"]
+	path = vendor/puppetry-detector
+	url = https://github.com/metawake/puppetry-detector
+[submodule "vendor/pytector"]
+	path = vendor/pytector
+	url = https://github.com/MaxMLang/pytector

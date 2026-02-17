@@ -1,0 +1,71 @@
+# Integrations Configuration
+# Platform-specific integration adapters and settings
+
+[integrations]
+# Global integration settings
+default_enabled = false
+
+# Claude Code integration
+[integrations.claude_code]
+enabled = false
+description = "Integration with Claude Code CLI"
+
+[integrations.claude_code.hooks]
+# Hook configuration for Claude Code
+pre_prompt = true  # Check prompts before sending
+post_response = false  # Check responses (optional)
+log_detections = true
+
+[integrations.claude_code.actions]
+# Action to take on detection
+on_detection = "warn"  # Options: "block", "warn", "log"
+warn_threshold = 0.5
+block_threshold = 0.8
+
+# API Gateway integration
+[integrations.api_gateway]
+enabled = false
+description = "Generic API gateway integration"
+
+[integrations.api_gateway.endpoints]
+# API endpoints
+check_endpoint = "/v1/check"
+batch_endpoint = "/v1/batch"
+health_endpoint = "/health"
+
+[integrations.api_gateway.authentication]
+# Auth configuration
+type = "api_key"  # Options: "api_key", "bearer", "none"
+header_name = "X-API-Key"
+key_env = "REBUFF_API_KEY"
+
+# Webhook integration
+[integrations.webhook]
+enabled = false
+description = "Webhook notification integration"
+
+[integrations.webhook.config]
+# Webhook configuration
+url_env = "REBUFF_WEBHOOK_URL"
+method = "POST"
+timeout_seconds = 5
+retry_count = 3
+
+[integrations.webhook.payload]
+# Payload format
+format = "json"  # Options: "json", "form"
+include_input = false  # Don't send input content for privacy
+include_score = true
+include_engines = true
+
+# Logging integration
+[integrations.logging]
+enabled = true
+description = "Detection event logging"
+
+[integrations.logging.config]
+# Logging configuration
+level = "INFO"  # Options: "DEBUG", "INFO", "WARNING", "ERROR"
+format = "json"  # Options: "json", "text"
+output = "stdout"  # Options: "stdout", "file", "both"
+file_path = ""  # Path if output includes file

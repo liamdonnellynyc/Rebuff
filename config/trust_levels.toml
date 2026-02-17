@@ -1,0 +1,55 @@
+# Trust Levels Configuration
+# Defines per-source confidence thresholds and trust policies
+
+[trust_levels]
+# Define named trust levels with their thresholds
+# Higher threshold = more suspicious, requires higher confidence to flag
+
+[trust_levels.system]
+# System prompts - highest trust, rarely flagged
+description = "System-level prompts from the application"
+threshold = 0.95
+allow_override = false
+
+[trust_levels.verified_user]
+# Verified/authenticated users
+description = "Authenticated and verified users"
+threshold = 0.8
+allow_override = true
+
+[trust_levels.user]
+# Regular authenticated users
+description = "Standard authenticated users"
+threshold = 0.7
+allow_override = true
+
+[trust_levels.external]
+# External/untrusted sources (API, webhooks, etc.)
+description = "External sources and untrusted inputs"
+threshold = 0.5
+allow_override = true
+
+[trust_levels.unknown]
+# Unknown/anonymous sources - lowest trust
+description = "Unknown or anonymous sources"
+threshold = 0.3
+allow_override = true
+
+[source_mapping]
+# Map input sources to trust levels
+# Format: source_pattern = trust_level_name
+"system/*" = "system"
+"user/verified/*" = "verified_user"
+"user/*" = "user"
+"api/*" = "external"
+"webhook/*" = "external"
+"*" = "unknown"
+
+[policies]
+# Additional trust policies
+
+# Whether to log inputs that fall below threshold
+log_below_threshold = true
+
+# Whether to block or warn on detection
+default_action = "warn"  # Options: "block", "warn", "log"

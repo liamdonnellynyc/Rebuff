@@ -1,0 +1,101 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prompt-injection-detector-suite"
+version = "0.1.0"
+description = "Multi-detector prompt injection defense system with trust-aware pipeline"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Rebuff Team"}
+]
+keywords = ["prompt-injection", "llm-security", "ai-safety"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "click>=8.1.0",
+    "toml>=0.10.2",
+    "pydantic>=2.0.0",
+    "requests>=2.31.0",
+    "aiohttp>=3.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pytest-timeout>=2.2.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+]
+piguard = [
+    "transformers>=4.35.0",
+    "torch>=2.0.0",
+]
+llmguard = [
+    "llm-guard>=0.3.0",
+]
+
+[project.scripts]
+rebuff = "cli.commands:cli"
+
+[project.entry-points."gt.injection"]
+scan = "cli.commands:scan"
+config = "cli.commands:config"
+health = "cli.commands:health"
+warmup = "cli.commands:warmup"
+benchmark = "cli.commands:benchmark"
+upstream = "cli.commands:upstream"
+
+[project.urls]
+Homepage = "https://github.com/rebuff/prompt-injection-detector-suite"
+Documentation = "https://github.com/rebuff/prompt-injection-detector-suite#readme"
+Repository = "https://github.com/rebuff/prompt-injection-detector-suite"
+
+[tool.setuptools.packages.find]
+include = ["adapters*", "core*", "integrations*", "cli*"]
+
+[tool.setuptools.package-dir]
+"puppetry_detector" = "vendor/puppetry-detector/puppetry_detector"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "benchmark: benchmark tests",
+    "compat: adapter compatibility tests",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+exclude = ["vendor/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+ignore_missing_imports = true

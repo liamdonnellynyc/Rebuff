@@ -1,0 +1,66 @@
+# Detection Engines Configuration
+# Engine-specific settings and parameters
+
+[engines]
+# Global engine settings
+default_enabled = true
+
+# Heuristic-based detection engine
+[engines.heuristic]
+enabled = true
+description = "Pattern and rule-based detection"
+timeout_seconds = 5
+
+[engines.heuristic.patterns]
+# Pattern detection sensitivity (0.0-1.0)
+sensitivity = 0.7
+
+# Enable specific pattern categories
+detect_instruction_override = true
+detect_role_manipulation = true
+detect_context_injection = true
+detect_encoding_attacks = true
+
+# Minimum pattern match score to flag
+min_match_score = 0.6
+
+# ML-based detection engine
+[engines.ml_based]
+enabled = true
+description = "Machine learning classifier-based detection"
+timeout_seconds = 15
+
+[engines.ml_based.model]
+# Model configuration
+type = "transformer"  # Options: "transformer", "ensemble", "custom"
+path = ""  # Path to model weights (empty = use default)
+batch_size = 32
+max_sequence_length = 512
+
+[engines.ml_based.inference]
+# Inference settings
+use_gpu = false
+quantization = "none"  # Options: "none", "int8", "fp16"
+
+# LLM-based detection engine
+[engines.llm_based]
+enabled = false  # Disabled by default (requires API key)
+description = "Large language model-based detection"
+timeout_seconds = 30
+
+[engines.llm_based.provider]
+# LLM provider configuration
+name = "anthropic"  # Options: "anthropic", "openai", "local"
+model = "claude-3-haiku-20240307"
+api_key_env = "ANTHROPIC_API_KEY"
+
+[engines.llm_based.prompts]
+# Detection prompt templates
+system_prompt = "You are a security analyst detecting prompt injection attacks."
+max_tokens = 100
+temperature = 0.0
+
+# Vendor tool adapters (from vendor/ submodules)
+[engines.vendor]
+# Placeholder for FOSS tool configurations
+# Will be populated as vendor tools are added

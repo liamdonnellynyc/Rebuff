@@ -1,0 +1,36 @@
+# Pipeline Configuration
+# Defines detection pipeline strategy, ordering, and timeouts
+
+[pipeline]
+# Strategy for combining detector results
+# Options: "parallel" (run all, aggregate), "sequential" (early exit on detection)
+strategy = "parallel"
+
+# Maximum time for entire pipeline execution
+timeout_seconds = 30
+
+# Early exit threshold - if a detector returns confidence >= this value, stop early
+# Set to >1.0 to disable early exit (useful for demos where you want all detector results)
+early_exit_threshold = 2.0
+
+[ordering]
+# Detectors run in this order (for sequential strategy)
+# Format: detector_name = priority (lower = runs first)
+heuristic = 1
+ml_based = 2
+llm_based = 3
+
+[aggregation]
+# How to combine multiple detector results
+# Options: "max", "average", "weighted", "voting"
+method = "weighted"
+
+# Minimum confidence threshold for flagging
+threshold = 0.7
+
+[defaults]
+# Default timeout per detector (can be overridden per-engine)
+detector_timeout_seconds = 10
+
+# Whether to continue if a detector fails
+continue_on_error = true

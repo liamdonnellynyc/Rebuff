@@ -1,0 +1,114 @@
+# Rebuff - Prompt Injection Detector Suite
+#
+# Usage:
+#   docker-compose up -d web                    # Web UI only (Puppetry)
+#   docker-compose --profile ml up -d           # Web UI + all ML detectors
+#   docker-compose up -d web pytector           # Web UI + Pytector only
+#   docker-compose up -d web llmguard           # Web UI + LLM-Guard only
+#   docker-compose up -d web piguard            # Web UI + PIGuard only
+#
+# Services:
+#   web:      Web UI on http://localhost:8080
+#   pytector: Pytector ML service (port 8081)
+#   piguard:  PIGuard ML service (port 8082)
+#   llmguard: LLM-Guard ML service (port 8083)
+#   rebuff:   CLI container
+
+services:
+  # Web UI - browser-based prompt injection detector
+  web:
+    build:
+      context: .
+      dockerfile: services/web/Dockerfile
+    image: rebuff-web:latest
+    container_name: rebuff-web
+    environment:
+      - PYTECTOR_SERVICE_URL=http://pytector:8081
+      - PIGUARD_SERVICE_URL=http://piguard:8082
+      - LLMGUARD_SERVICE_URL=http://llmguard:8083
+    ports:
+      - "8080:8080"
+    networks:
+      - rebuff-network
+
+  # Pytector service - ML-based detection (DistilBERT)
+  pytector:
+    build:
+      context: .
+      dockerfile: services/pytector/Dockerfile
+    image: rebuff-pytector:latest
+    container_name: rebuff-pytector
+    profiles:
+      - ml
+    environment:
+      - PYTECTOR_MODEL=distilbert
+      - PYTECTOR_THRESHOLD=0.5
+    ports:
+      - "8081:8081"
+    networks:
+      - rebuff-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # LLM-Guard service - ML-based detection
+  llmguard:
+    build:
+      context: .
+      dockerfile: services/llmguard/Dockerfile
+    image: rebuff-llmguard:latest
+    container_name: rebuff-llmguard
+    profiles:
+      - ml
+    ports:
+      - "8083:8083"
+    networks:
+      - rebuff-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8083/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # PIGuard service - HuggingFace model (leolee99/PIGuard)
+  piguard:
+    build:
+      context: .
+      dockerfile: services/piguard/Dockerfile
+    image: rebuff-piguard:latest
+    container_name: rebuff-piguard
+    profiles:
+      - ml
+    ports:
+      - "8082:8082"
+    networks:
+      - rebuff-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8082/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  # CLI container
+  rebuff:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rebuff:latest
+    container_name: rebuff
+    environment:
+      - PYTECTOR_SERVICE_URL=http://pytector:8081
+      - PIGUARD_SERVICE_URL=http://piguard:8082
+      - LLMGUARD_SERVICE_URL=http://llmguard:8083
+    networks:
+      - rebuff-network
+    entrypoint: ["sleep", "infinity"]
+
+networks:
+  rebuff-network:
+    driver: bridge

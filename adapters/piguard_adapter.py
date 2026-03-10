@@ -23,7 +23,7 @@ class PIGuardDetector(Detector):
         self,
         stub_mode: bool | None = None,
         service_url: str | None = None,
-        timeout_ms: float = 5000,
+        timeout_ms: float = 30000,
     ) -> None:
         self._service_url = service_url or PIGUARD_SERVICE_URL
         self._timeout_ms = timeout_ms
@@ -39,7 +39,9 @@ class PIGuardDetector(Detector):
         import requests
         try:
             resp = requests.get(f"{self._service_url}/health", timeout=self._timeout_ms / 1000)
-            return bool(resp.status_code == 200)
+            if resp.status_code != 200:
+                return False
+            return resp.json().get("ready", False)
         except Exception:
             return False
 

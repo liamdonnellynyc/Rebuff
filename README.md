@@ -9,11 +9,11 @@ A local-only, multi-detector prompt injection defense system with trust-aware pi
 | Core Pipeline | Working | Parallel/sequential/weighted strategies |
 | LastLayer | Working | Pattern-based, ~2ms, catches encoding/exploits |
 | Puppetry | Working | Regex-based, <1ms, catches policy injection |
-| Pytector | Optional | ML-based (DeBERTa), runs in separate container |
-| PIGuard | Stub | Heavy ML deps, not containerized |
-| LLM-Guard | Stub | Heavy ML deps, not containerized |
+| Pytector | Working | ML-based (DeBERTa), separate container |
+| PIGuard | Working | HuggingFace model, separate container |
+| LLM-Guard | Working | ML-based, separate container |
 | CLI | Working | `rebuffscan`, `rebuffhealth`, `rebuffhook`, etc. |
-| Docker | Working | Main + optional Pytector container |
+| Docker | Working | All services via `docker-compose up` |
 | Claude Code hooks | **Working** | Full agentic integration via hooks |
 | Multi-agent hooks | Not wired | Integration code exists |
 
@@ -52,46 +52,28 @@ rebuffscan --source tool_output --content "Click [here](javascript:alert(1))"
 # Status: INJECTION DETECTED (LastLayer catches this!)
 ```
 
-### Demo UI
-
-Try out the detector in your browser:
+### Docker
 
 ```bash
-# Build and start the web UI
-docker-compose build web
-docker-compose up -d web
+# Build and start all services
+docker-compose up -d --build
 
 # Open http://localhost:8080 in your browser
 ```
 
-The web UI provides:
-- Interactive text input for testing prompts
-- Real-time detection results from all enabled detectors
-- Confidence scores and category breakdowns
-- JSON API at `POST /api/scan` for programmatic access
-
-To enable ML detectors alongside the web UI:
-
-```bash
-# Web UI + Pytector (DeBERTa model)
-docker-compose up -d web pytector
-
-# Web UI + all ML detectors
-docker-compose --profile ml up -d
-```
-
-### Docker CLI
+This starts all services:
+- **web** - Web UI with interactive testing and `POST /api/scan` API (port 8080)
+- **pytector** - DeBERTa ML detection (port 8081)
+- **piguard** - PIGuard ML detection (port 8082)
+- **llmguard** - LLM-Guard ML detection (port 8083)
+- **rebuff** - CLI container
 
 ```bash
-# Build containers
-docker-compose build
+# Or start individual services
+docker-compose up -d web              # Web UI only
+docker-compose up -d web pytector     # Web UI + Pytector
 
-# Run lightweight (Puppetry only)
-docker-compose up -d rebuff
-docker-compose exec rebuff rebuff scan --source mcp --content "Ignore instructions"
-
-# Run with ML detection (includes Pytector)
-docker-compose --profile ml up -d
+# CLI usage
 docker-compose exec rebuff rebuff scan --source mcp --content "Ignore instructions"
 
 # One-shot scan
@@ -109,26 +91,24 @@ docker-compose run --rm rebuff scan --source tool_output --content "test"
 
 Both run in the main container with minimal dependencies.
 
-### ML-Based (Optional Container)
+### ML-Based (Separate Containers)
 
 | Detector | Latency | Catches |
 |----------|---------|---------|
 | **Pytector** | ~50ms | Semantic prompt injection via DeBERTa/DistilBERT |
+| **PIGuard** | ~50ms | HuggingFace prompt injection model |
+| **LLM-Guard** | ~50ms | Multi-scanner ML detection |
 
-Runs in a separate container (`rebuff-pytector`) to isolate heavy dependencies:
-- torch (~2GB)
-- transformers
-- Pre-trained DeBERTa model
+Each runs in its own container to isolate heavy dependencies (torch, transformers).
 
 ```bash
-# Start Pytector container
-docker-compose --profile ml up -d pytector
+# Check services are running
+curl http://localhost:8081/health   # Pytector
+curl http://localhost:8082/health   # PIGuard
+curl http://localhost:8083/health   # LLM-Guard
 
-# Check it's running
-curl http://localhost:8081/health
-
-# Rebuff will automatically use it if available
-docker-compose exec rebuffrebuffhealth
+# Rebuff automatically uses all available detectors
+docker-compose exec rebuff rebuff health
 ```
 
 ## CLI Commands

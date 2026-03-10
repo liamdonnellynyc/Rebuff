@@ -5,8 +5,9 @@ from pydantic import BaseModel
 
 app = FastAPI(title="PIGuard Service", version="0.1.0")
 
-# Lazy load to avoid startup delay
 classifier = None
+model_ready = False
+
 
 def get_classifier():
     global classifier
@@ -25,6 +26,16 @@ def get_classifier():
     return classifier
 
 
+@app.on_event("startup")
+async def load_model():
+    """Load model at startup so first request doesn't timeout."""
+    import asyncio
+    global model_ready
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, get_classifier)
+    model_ready = True
+
+
 class DetectRequest(BaseModel):
     text: str
 
@@ -38,7 +49,7 @@ class DetectResponse(BaseModel):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "ready": True}
+    return {"status": "ok", "ready": model_ready}
 
 
 @app.post("/detect", response_model=DetectResponse)

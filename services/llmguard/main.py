@@ -5,8 +5,9 @@ from pydantic import BaseModel
 
 app = FastAPI(title="LLM-Guard Service", version="0.1.0")
 
-# Lazy load to avoid startup delay
 scanner = None
+model_ready = False
+
 
 def get_scanner():
     global scanner
@@ -14,6 +15,16 @@ def get_scanner():
         from llm_guard.input_scanners import PromptInjection
         scanner = PromptInjection(threshold=0.5)
     return scanner
+
+
+@app.on_event("startup")
+async def load_model():
+    """Load model at startup so first request doesn't timeout."""
+    import asyncio
+    global model_ready
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, get_scanner)
+    model_ready = True
 
 
 class DetectRequest(BaseModel):
@@ -29,7 +40,7 @@ class DetectResponse(BaseModel):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "ready": True}
+    return {"status": "ok", "ready": model_ready}
 
 
 @app.post("/detect", response_model=DetectResponse)

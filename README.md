@@ -19,6 +19,17 @@ A local-only, multi-detector prompt injection defense system with trust-aware pi
 
 ## Quick Start
 
+### Clone the Repository
+
+```bash
+# Clone with submodules (required for vendor detectors)
+git clone --recursive https://github.com/liamdonnellynyc/rebuff.git
+cd rebuff
+
+# If you already cloned without --recursive:
+git submodule update --init --recursive
+```
+
 ### Local Development
 
 ```bash
